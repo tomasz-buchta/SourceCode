@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace ParameterManagementSystem
 {
@@ -16,6 +17,8 @@ namespace ParameterManagementSystem
         [STAThread]
         static void Main(string[] argv)
         {
+            Debugger.Launch();
+
             if (argv.Count<string>() < 2)
             {
                 Application.EnableVisualStyles();

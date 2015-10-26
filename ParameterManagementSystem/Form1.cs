@@ -28,7 +28,7 @@ namespace ParameterManagementSystem
                 {
                     path = sr.ReadLine();
                 }
-                if (!"".Equals(path))
+                if (!string.IsNullOrEmpty(path))
                 {
                     SetNewDatabase(path);
                     ClearXmlFilesList();

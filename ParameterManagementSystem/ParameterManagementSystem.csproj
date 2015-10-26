@@ -206,6 +206,7 @@
     <EmbeddedResource Include="VaryParameterForm.resx">
       <DependentUpon>VaryParameterForm.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="ClassDiagram1.cd" />
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
