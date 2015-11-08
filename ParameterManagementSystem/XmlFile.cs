@@ -9,13 +9,13 @@ namespace ParameterManagementSystem
     public class XmlFile
     {
         #region Properties
-        // Change: 28-10-2012 Properties instead of public fields
         public int Id { get; set; }
         public string Name { get; set; }
         public string Tag { get; set; }
         public DateTime TimeStamp { get; set; }
         public string Content { get; set; }
         #endregion
+
         #region .Ctr
 
         public XmlFile() { }

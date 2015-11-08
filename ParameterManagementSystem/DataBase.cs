@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Data;
 using System.Data.OleDb;
 using ADOX;
@@ -10,17 +9,40 @@ namespace ParameterManagementSystem
 {
     public class DataBase
     {
+        #region Consts
+        private const string GET_ALL = "SELECT * FORM {0};";
+        private const string DELETE_ALL = "DELETE * FROM {0};";
+
+        private const string NEW_TAG = "INSERT INTO TAGS(TAG_ID, TAG_NAME) VALUES({0}, '{1}');";
+        private const string NEW_XML_TAG_RELATION = "INSERT INTO XML_TAG_RELATION(TAG_ID, XML_ID) VALUES({0}, {1});";
+        private const string NEW_XML_FILE = "INSERT INTO XML_TABLE(XML_ID, FILE_NAME, XML_FILE, TIME_STAMP) VALUES({0}, '{1}', '{2}', '{3}');";
+        #endregion
+
         #region Private fields
 
+        /// <summary>
+        /// Describes database structure
+        /// </summary>
         private Catalog _cat;
+
+        /// <summary>
+        /// Path to database file
+        /// </summary>
         private string _databaseFileName;
 
         #endregion
 
         #region Constructors
 
+        /// <summary>
+        /// Saves given database file path
+        /// </summary>
+        /// <param name="name">Database file path</param>
         public DataBase(string name)
         {
+            if (String.IsNullOrWhiteSpace(name))
+              throw new ArgumentException("Given database file path is empty or null");
+
             _databaseFileName = name;
         }
 
@@ -28,9 +50,11 @@ namespace ParameterManagementSystem
 
         #region Properties
      
+        /// <summary>
+        /// Provides access to database name
+        /// </summary>
         public string Name
         {
-            //get the database name 
             get { return this._databaseFileName; }
         }
         
@@ -38,35 +62,46 @@ namespace ParameterManagementSystem
 
         #region Public methods
 
+        /// <summary>
+        /// Removes all entries from given table
+        /// </summary>
+        /// <param name="table">Table name</param>
+        /// <returns>True if success</returns>
         public bool DeleteAllData(string table)
         {
-            string strSQL;
+            string strSQL = string.Format(DELETE_ALL, table);
             ADODB.Connection con = new ADODB.Connection();
             object obj = new object();
 
             try
             {
-                con.Open(GenerateConnectionString(),
-                                "", "", 0);
+                con.Open(GenerateConnectionString(), "", "", 0);
             }
             catch (Exception)
             {
+                //TODO: Error logging
                 return false;
             }
-            strSQL = "DELETE * FROM " + table + ";";
+            
             try
             {
                 con.Execute(strSQL, out obj, 0);
             }
             catch (Exception)
             {
+                //TODO: Error logging
                 con.Close();
                 return false;
             }
+
             con.Close();
             return true;
         }
 
+        /// <summary>
+        /// Creates new database file
+        /// </summary>
+        /// <returns>True if success</returns>
         public bool CreateNewDatabase()
         {
             try
@@ -75,18 +110,26 @@ namespace ParameterManagementSystem
                 string strCreateDB = GenerateConnectionString();
                 _cat.Create(strCreateDB);
                 _cat.let_ActiveConnection(strCreateDB);
+
                 CreateTableXmlTable();
                 CreateTableTags();
                 CreateTableXmlTagsRelation();
                 CreateTableUser();
+
                 return true;
             }
             catch (Exception)
             {
+                //TODO: Error logging
                 return false;
             }
         }
 
+        /// <summary>
+        /// Saves relations between TAGs and XML rows
+        /// </summary>
+        /// <param name="relationsArray">List with TAG IDs and XML FIELD IDs</param>
+        /// <returns>True if success</returns>
         public bool SaveRelations(XmlTagRelation[] relationsArray)
         {
             string strSQL;
@@ -95,33 +138,41 @@ namespace ParameterManagementSystem
 
             try
             {
-                con.Open(GenerateConnectionString(),
-                                "", "", 0);
+                con.Open(GenerateConnectionString(), "", "", 0);
             }
             catch (Exception)
             {
+                //TODO: Error logging
                 return false;
             }
-
-            int count = relationsArray.Count<XmlTagRelation>();
-            for (int i = 0; i < count; i++)
+            
+            for (int i = 0; i < relationsArray.Length; i++)
             {
-                strSQL = "INSERT INTO XML_TAG_RELATION(TAG_ID, XML_ID) " +
-                    "VALUES(" + relationsArray[i].TagID + ",'" + relationsArray[i].XmlFileID + "');";
+                strSQL = string.Format(NEW_XML_TAG_RELATION,
+                    relationsArray[i].TagID,
+                    relationsArray[i].XmlFileID);
+
                 try
                 {
                     con.Execute(strSQL, out obj, 0);
                 }
                 catch (Exception)
                 {
+                    //TODO: Error logging
                     con.Close();
                     return false;
                 }
             }
+
             con.Close();
             return true;
         }
 
+        /// <summary>
+        /// Saves TAGs list into database
+        /// </summary>
+        /// <param name="tagsArray">List of TAGs</param>
+        /// <returns>True if success</returns>
         public bool SaveTags(Tag[] tagsArray)
         {
             string strSQL;
@@ -130,18 +181,19 @@ namespace ParameterManagementSystem
 
             try
             {
-                con.Open(GenerateConnectionString(),
-                                "", "", 0);
+                con.Open(GenerateConnectionString(), "", "", 0);
             }
             catch (Exception)
             {
+                //TODO: Error logging
                 return false;
             }
-            int count = tagsArray.Count<Tag>();
-            for (int i = 0; i < count; i++)
+            
+            for (int i = 0; i < tagsArray.Length; i++)
             {
-                strSQL = "INSERT INTO TAGS(TAG_ID, TAG_NAME) " +
-                    "VALUES(" + tagsArray[i].Id + ",'" + tagsArray[i].Name + "');";
+                strSQL = string.Format(NEW_TAG,
+                    tagsArray[i].Id,
+                    tagsArray[i].Name);
 
                 try
                 {
@@ -149,14 +201,21 @@ namespace ParameterManagementSystem
                 }
                 catch (Exception)
                 {
+                    //TODO: Error logging
                     con.Close();
                     return false;
                 }
             }
+
             con.Close();
             return true;
         }
 
+        /// <summary>
+        /// Saves information about XML Files into database
+        /// </summary>
+        /// <param name="filesArray">List with informations about XML Files</param>
+        /// <returns>True if success</returns>
         public bool SaveFiles(XmlFile[] filesArray)
         {
             string strSQL;
@@ -165,76 +224,41 @@ namespace ParameterManagementSystem
 
             try
             {
-                con.Open(GenerateConnectionString(),
-                                "", "", 0);
+                con.Open(GenerateConnectionString(), "", "", 0);
             }
             catch (Exception)
             {
                 return false;
             }
-            int count = filesArray.Count<XmlFile>();
-            for (int i = 0; i < count; i++)
-            {
-                XmlFile item = filesArray[i];
 
-                strSQL = "INSERT INTO XML_TABLE(XML_ID, FILE_NAME, XML_FILE, TIME_STAMP) " +
-                    "VALUES(" + item.Id + ",'" + item.Name + "','" + item.Content +
-                    "','" + item.TimeStamp + "');";
+            for (int i = 0; i < filesArray.Length; i++)
+            {
+                strSQL = string.Format(NEW_XML_FILE,
+                    filesArray[i].Id,
+                    filesArray[i].Name,
+                    filesArray[i].Content,
+                    filesArray[i].TimeStamp);
+
                 try
                 {
                     con.Execute(strSQL, out obj, 0);
                 }
                 catch (Exception)
                 {
+                    //TODO: Error logging
                     con.Close();
                     return false;
                 }
             }
-            con.Close();
-            return true;
-        }
-
-        public bool SaveUserItem(int id, string val)
-        {
-            string strSQL;
-            ADODB.Connection con = new ADODB.Connection();
-            object obj = new object();
-
-            try
-            {
-                con.Open(GenerateConnectionString(),
-                                "", "", 0);
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-
-            string res = LoadUserItem(id);
-            if (res == null)
-                strSQL = "INSERT INTO USER_VALS(ITEM_ID, ITEM_VAL) VALUES(" + id + ",'" + val + "');";
-            else
-                strSQL = "UPDATE USER_VALS SET ITEM_VAL='" + val + "' WHERE ITEM_ID=" + id + ";";
-
-            try
-            {
-                con.Execute(strSQL, out obj, 0);
-            }
-            catch (Exception)
-            {
-                con.Close();
-                return false;
-            }
 
             con.Close();
             return true;
-
         }
 
         public Tag[] LoadTagsArray()
         {
             string strAccessConn = GenerateConnectionString();
-            string strAccessSelect = "SELECT * FROM TAGS";
+            string strAccessSelect = string.Format(GET_ALL, "TAGS");
 
             // Create the dataset and add the Categories table to it:
             DataSet myDataSet = new DataSet();

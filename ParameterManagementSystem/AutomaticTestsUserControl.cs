@@ -30,8 +30,10 @@ namespace ParameterManagementSystem
 
             backgroundWorker1.WorkerSupportsCancellation = true;
 
+            // TODO: remove variables:
             file_dir = "c:\\SE_test";
             batch_dir = "c:\\SE_test\\test_batch.bat";
+            // TODO: provide some default empty path
             executor = new BatchExecutor(batch_dir);
         
         }
