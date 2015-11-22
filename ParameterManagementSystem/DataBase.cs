@@ -399,47 +399,6 @@ namespace ParameterManagementSystem
             return array;
         }
 
-        public string LoadUserItem(int id)
-        {
-            string strAccessConn = GenerateConnectionString();
-            string strAccessSelect = "SELECT * FROM USER_VALS WHERE ITEM_ID=" + id;
-
-            // Create the dataset and add the Categories table to it:
-            DataSet myDataSet = new DataSet();
-            OleDbConnection myAccessConn = null;
-            try
-            {
-                myAccessConn = new OleDbConnection(strAccessConn);
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-
-            try
-            {
-                OleDbCommand myAccessCommand = new OleDbCommand(strAccessSelect, myAccessConn);
-                OleDbDataAdapter myDataAdapter = new OleDbDataAdapter(myAccessCommand);
-
-                myAccessConn.Open();
-                myDataAdapter.Fill(myDataSet, "USER_VALS");
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-            finally
-            {
-                myAccessConn.Close();
-            }
-
-            DataRowCollection dra = myDataSet.Tables["USER_VALS"].Rows;
-            if (dra.Count == 1)
-                return dra[0].ItemArray[1].ToString();
-
-            return null;
-        } 
-
         #endregion
 
         #region Private methods

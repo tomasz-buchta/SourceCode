@@ -50,30 +50,7 @@ namespace ParameterManagementSystem
             set
             {
                 database = value;
-
-                string res = database.LoadUserItem(0);
-                if (res != null)
-                {
-                    int n = res.Length - 1;
-                    while (n > 0 && res[n--] == ' ');
-                    if (n >= 0)
-                        res = res.Substring(0, n + 2);
-
-                    file_dir = res;
-                }
-                res = database.LoadUserItem(1);
-                if (res != null)
-                {
-                    int n = res.Length - 1;
-                    while (n > 0 && res[n--] == ' ') ;
-                    if (n >= 0)
-                        res = res.Substring(0, n + 2);
-
-                    batch_dir = res;
-                    executor = new BatchExecutor(batch_dir);
-                }
             }
-
         }
 
         private string get_log_time()
